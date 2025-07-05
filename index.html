@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>News App with Search & Category</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+    }
+
+    header {
+      background: #1e90ff;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px;
+      background: #fff;
+    }
+
+    .controls input, .controls select, .controls button {
+      padding: 10px;
+      font-size: 16px;
+    }
+
+    #news-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .news-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .news-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .news-content {
+      padding: 15px;
+    }
+
+    .news-content h3 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    .news-content p {
+      font-size: 14px;
+      color: #555;
+    }
+
+    .news-content a {
+      margin-top: auto;
+      color: #1e90ff;
+      text-decoration: none;
+    }
+
+    .news-content a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>📰 News Hub</h1>
+  </header>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search news...">
+    <select id="categorySelect">
+      <option value="">All Categories</option>
+      <option value="business">Business</option>
+      <option value="entertainment">Entertainment</option>
+      <option value="health">Health</option>
+      <option value="science">Science</option>
+      <option value="sports">Sports</option>
+      <option value="technology">Technology</option>
+    </select>
+    <button onclick="fetchNews()">Search</button>
+  </div>
+
+  <div id="news-container"></div>
+
+  <script>
+    const apiKey = '393eb16554dc410ea1e18c46765d3744';  // 🔑 Replace with your actual NewsAPI.org API key
+    const searchInput = document.getElementById('searchInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const newsContainer = document.getElementById('news-container');
+
+    async function fetchNews() {
+      const query = searchInput.value.trim();
+      const category = categorySelect.value;
+      let url = '';
+
+      if (query) {
+        url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&sortBy=publishedAt&apiKey=${apiKey}`;
+      } else {
+        url = `https://newsapi.org/v2/top-headlines?country=in${category ? `&category=${category}` : ''}&apiKey=${apiKey}`;
+      }
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.articles && data.articles.length > 0) {
+          displayNews(data.articles);
+        } else {
+          newsContainer.innerHTML = '<p style="padding: 20px;">No news found.</p>';
+        }
+      } catch (err) {
+        console.error(err);
+        newsContainer.innerHTML = '<p style="padding: 20px; color:red;">Failed to fetch news.</p>';
+      }
+    }
+
+    function displayNews(articles) {
+      newsContainer.innerHTML = articles.map(article => `
+        <div class="news-card">
+          <img src="${article.urlToImage || 'https://via.placeholder.com/300x180'}" alt="News Image">
+          <div class="news-content">
+            <h3>${article.title}</h3>
+            <p>${article.description || 'No description available.'}</p>
+            <a href="${article.url}" target="_blank">Read more</a>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load default news on first load
+    fetchNews();
+  </script>
+
+</body>
+</html>
